@@ -12,20 +12,40 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-gcp_project_id_str = os.getenv("GOOGLE_CLOUD_PROJECT")
+_model = None
 
-current_path = os.path.dirname(os.path.abspath(__file__))
-credentials_path = os.path.join(
-    current_path, "credentials", "ai-interview-poc-2b5cf8540f16.json"
-)
 
-# Load credentials
-credentials = service_account.Credentials.from_service_account_file(credentials_path)
+def _get_model():
+    """Lazily initializes the Vertex AI model on first use instead of at import
+    time, so the app can still boot when Vertex AI credentials aren't configured
+    (only this feature is unavailable, not the whole service)."""
+    global _model
+    if _model is not None:
+        return _model
 
-vertexai.init(
-    project=gcp_project_id_str, credentials=credentials, location="us-central1"
-)
-model = GenerativeModel("gemini-2.0-flash")
+    gcp_project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
+    credentials_json = os.getenv("GCP_SERVICE_ACCOUNT_JSON")
+    credentials_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+
+    if not gcp_project_id or not (credentials_json or credentials_path):
+        raise HTTPException(
+            status_code=503,
+            detail="Vertex AI is not configured (missing GOOGLE_CLOUD_PROJECT / "
+                   "GCP_SERVICE_ACCOUNT_JSON). Video analysis is unavailable.",
+        )
+
+    if credentials_json:
+        credentials = service_account.Credentials.from_service_account_info(
+            json.loads(credentials_json)
+        )
+    else:
+        credentials = service_account.Credentials.from_service_account_file(
+            credentials_path
+        )
+
+    vertexai.init(project=gcp_project_id, credentials=credentials, location="us-central1")
+    _model = GenerativeModel("gemini-2.0-flash")
+    return _model
 
 
 async def analyze_video(
@@ -144,6 +164,7 @@ Example output:
 
     # Analyze video
     try:
+        model = _get_model()
         start_time = time.time()
         response = model.generate_content(
             contents=[
@@ -187,6 +208,8 @@ Example output:
         except (ValueError, json.JSONDecodeError) as e:
             logger.error(f"Invalid Vertex AI response: {str(e)}")
             raise HTTPException(status_code=500, detail="Invalid analysis response")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Vertex AI error: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to analyze video")

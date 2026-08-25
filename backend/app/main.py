@@ -12,9 +12,10 @@ load_dotenv()
 app = FastAPI(title="MockMate", version="1.0.0")
 
 # CORS Middleware
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Update to your production frontend URL
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -28,7 +29,6 @@ try:
         maxPoolSize=50,
         minPoolSize=10,
     )
-    print(os.getenv("MONGODB_URI"))
     client.admin.command('ping')  # Health check
     db = client["interview_ai"]  # Automatically uses the database specified in MONGODB_URI
     logger.info("Connected to MongoDB Atlas")

@@ -35,6 +35,6 @@ async def generate_questions(job_description: str, difficulty: str, num_question
         print(parsed_json)
         logger.info(f"Generated {len(parsed_json)} questions for {job_description}")
         return parsed_json
-    except requests.RequestException as e:
+    except Exception as e:
         logger.error(f"Gemini API error: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to generate questions")
