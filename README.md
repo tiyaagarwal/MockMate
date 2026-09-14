@@ -65,11 +65,13 @@ Create a `.env` file in the `backend` directory with the required keys, for exam
 
 ```
 MONGODB_URI=your_mongodb_atlas_connection_string
+SECRET_KEY=your_jwt_signing_secret
+GEMINI_API_KEY=your_gemini_api_key
 GOOGLE_APPLICATION_CREDENTIALS=path_to_your_service_account_json
-GCP_PROJECT_ID=your_gcp_project_id
-GEMINI_MODEL=gemini-2.0-flash
-PORT=8000
+GOOGLE_CLOUD_PROJECT=your_gcp_project_id
 ```
+
+`SECRET_KEY` and `GEMINI_API_KEY` are required: the backend raises `RuntimeError("Missing SECRET_KEY")` on startup if `SECRET_KEY` is unset, and question generation calls the Gemini API using `GEMINI_API_KEY` (the model name is hardcoded, not read from an env var). `GOOGLE_CLOUD_PROJECT` is the variable the Vertex AI video-analysis service actually reads (not `GCP_PROJECT_ID`).
 
 ### Running the App
 
