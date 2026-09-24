@@ -1,7 +1,5 @@
 import json
 import os
-from google.cloud import aiplatform
-from google.cloud.aiplatform.gapic import PredictionServiceClient
 from fastapi import HTTPException
 from app.utils.logger import logger
 import vertexai
