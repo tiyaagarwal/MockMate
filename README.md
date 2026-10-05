@@ -25,7 +25,7 @@ MockMate/
 | React.js | FastAPI | Google Vertex AI |
 | Ant Design (UI library) | Uvicorn (ASGI server) | Gemini-2.0-flash |
 | Axios (API calls) | Python 3.12+ | MongoDB Atlas |
-| React Toastify | Pydantic | |
+| React Toastify | Pydantic | AWS S3 |
 
 ## Getting Started
 
@@ -36,6 +36,7 @@ MockMate/
 - Node.js and npm
 - A MongoDB Atlas cluster
 - A Google Cloud project with Vertex AI enabled (for Gemini-2.0-flash access)
+- An AWS S3 bucket (for storing uploaded interview videos)
 
 ### Installation
 
@@ -69,9 +70,12 @@ SECRET_KEY=your_jwt_signing_secret
 GEMINI_API_KEY=your_gemini_api_key
 GOOGLE_APPLICATION_CREDENTIALS=path_to_your_service_account_json
 GOOGLE_CLOUD_PROJECT=your_gcp_project_id
+AWS_ACCESS_KEY_ID=your_aws_access_key_id
+AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
+S3_BUCKET_NAME=your_s3_bucket_name
 ```
 
-`SECRET_KEY` and `GEMINI_API_KEY` are required: the backend raises `RuntimeError("Missing SECRET_KEY")` on startup if `SECRET_KEY` is unset, and question generation calls the Gemini API using `GEMINI_API_KEY` (the model name is hardcoded, not read from an env var). `GOOGLE_CLOUD_PROJECT` is the variable the Vertex AI video-analysis service actually reads (not `GCP_PROJECT_ID`).
+`SECRET_KEY` and `GEMINI_API_KEY` are required: the backend raises `RuntimeError("Missing SECRET_KEY")` on startup if `SECRET_KEY` is unset, and question generation calls the Gemini API using `GEMINI_API_KEY` (the model name is hardcoded, not read from an env var). `GOOGLE_CLOUD_PROJECT` is the variable the Vertex AI video-analysis service actually reads (not `GCP_PROJECT_ID`). `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `S3_BUCKET_NAME` are required for the video-upload endpoint (`s3_service.py`), which otherwise fails with a 500 error.
 
 ### Running the App
 
