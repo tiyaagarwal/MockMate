@@ -1,8 +1,14 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
+import { ThemeProvider } from './context/ThemeContext';
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+test('redirects unauthenticated users to the login page', () => {
+  localStorage.removeItem('token');
+  render(
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
+  );
+  const heading = screen.getByRole('heading', { name: /login/i });
+  expect(heading).toBeInTheDocument();
 });
